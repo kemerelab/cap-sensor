@@ -1,0 +1,13 @@
+# Python
+*.pyc
+.ipynb_checkpoints
+__temp__*
+
+# Data
+#capacitiveSensor/data/*
+
+# VS Code
+.vscode/*
+
+# Binaries
+capacitiveSensor/bin/*
