@@ -4,10 +4,10 @@
 __temp__*
 
 # Data
-#capacitiveSensor/data/*
+#testing/data/*
 
 # VS Code
 .vscode/*
 
 # Binaries
-capacitiveSensor/bin/*
+firmware/bin/*
