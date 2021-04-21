@@ -12,7 +12,8 @@ CapacitiveSensor cs[] = {
   CapacitiveSensor(0, 1)
 };
 long vals[1]; // sensor values
-int pinsOut[1] = {13}; // output pins
+int pinsOut[1] = {3}; // output pins
+int ledsOut[1] = {13}; // LEDs representing sensor states
 int output[1] = {LOW}; // current output states
 int analogPin = A1; // threshold input
 
@@ -26,7 +27,9 @@ void setup() {
   for (int i = 0; i < nSensors; i++)
   {
     pinMode(pinsOut[i], OUTPUT);
+    pinMode(ledsOut[i], OUTPUT);
     digitalWrite(pinsOut[i], LOW);
+    digitalWrite(ledsOut[i], LOW);
   }
 
   // Set analog input for threshold
@@ -73,11 +76,13 @@ void loop() {
     if ((vals[i] > th) && (output[i] == LOW))
     {
       digitalWrite(pinsOut[i], HIGH);
+      digitalWrite(ledsOut[i], HIGH);
       output[i] = HIGH;
     }
     else if ((vals[i] < th) && (output[i] == HIGH))
     {
       digitalWrite(pinsOut[i], LOW);
+      digitalWrite(ledsOut[i], LOW);
       output[i] = LOW;
     }
   }
