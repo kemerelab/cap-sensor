@@ -2,21 +2,23 @@
 #include <filter.h>
 
 // Settings
-const int nSensors = 2; // number of lick sensors
+const int nSensors = 1; // number of lick sensors
 long sensitivity = 30; // sensor sensitivity (increases acquisition time)
-double thresh = 5.0; // threshold for detecting lick (stds from mean)
+bool hasAnalogPin = true; // does setup use analog input pin to determine threshold?
+double thresh; // threshold for detecting lick (stds from mean)
+double thresh_low = 1.0; 
+double thresh_high = 10.0;
 double alpha = 0.007; // contribution of signal to filter buffer stats
 double tFilter = 0.500; // duration of filter buffer (s) (determines responsiveness)
 double sampleRate = 200.0; // sample frequency (Hz) (determines resolution)
 
 // Sensor I/O (constructor format: (pin_HIGH, pin_LOW))
-CapacitiveSensor cs[] = {
-    CapacitiveSensor(13, 11),
-    CapacitiveSensor(4, 2)
-};
+CapacitiveSensor cs[] = {CapacitiveSensor(0, 1)};
 long val; // sensor value
-int pinsOut[nSensors] = {22, 23}; // output pins
+int pinsOut[nSensors] = {3}; // output pins
+int ledsOut[nSensors] = {13}; // LEDs representing sensor states
 int output[nSensors]; // current output states
+int analogPin = A1; // threshold input
 
 // Sensor filter
 MovingFilter mf[nSensors]; // filters
@@ -37,7 +39,9 @@ void setup() {
     for (int i = 0; i < nSensors; i++)
     {
         pinMode(pinsOut[i], OUTPUT);
+        pinMode(ledsOut[i], OUTPUT);
         digitalWrite(pinsOut[i], LOW);
+        digitalWrite(ledsOut[i], LOW);
         output[i] = LOW;
     }
 
@@ -63,6 +67,9 @@ void setup() {
     }
 
     // Create filters
+    if (hasAnalogPin) {
+        thresh = getThreshold(analogRead(analogPin));
+    }
     for (int i = 0; i < nSensors; i++) {
         mf[i].createFilter(n, thresh, alpha);
     }
@@ -77,7 +84,12 @@ void setup() {
     Serial.print("buffer duration: "); Serial.println((double) n * samplePeriod * 1.0e-6);
     Serial.print("sample rate: "); Serial.println(sampleRate);
     Serial.print("alpha: "); Serial.println(alpha, 5);
-    Serial.print("signal threshold (std): "); Serial.println(thresh, 2);
+    if (hasAnalogPin) {
+        Serial.print("signal threshold range (std): "); Serial.print(thresh_low, 2); Serial.print(" - "); Serial.println(thresh_high, 2);
+    }
+    else {
+        Serial.print("signal threshold (std): "); Serial.println(thresh, 2);
+    }
     Serial.println();
 
     delay(5000);
@@ -88,9 +100,10 @@ void loop() {
     tCurrent = micros();
     
     // Check command
-    if (Serial.available() > 0) {
-        processCommand();
-    }
+    // TODO: freezes with Trinket M0 for some reason...
+    // if (Serial.available() > 0) {
+    //     processCommand();
+    // }
 
     // Write sensor value with sample frequency or if clock restarted
     if ((tCurrent - tStart > samplePeriod) || (tCurrent - tStart < 0))
@@ -102,11 +115,21 @@ void loop() {
         {
             // Get current sensor value
             // Note: sensor value acquisition limits transmission rate
-            val = cs[i].capacitiveSensor(sensitivity);
+            val = cs[i].capacitiveSensorRaw(sensitivity); // use raw value to avoid heuristic conflicting with filter
       
             // Print raw values
             Serial.print(" ");
             Serial.print(val);
+
+            // Get current threshold and update filter
+            if (hasAnalogPin) {
+                thresh = getThreshold(analogRead(analogPin));
+                mf[i].thresh = thresh;
+            }
+
+            // Print threshold value
+            Serial.print(" ");
+            Serial.print(thresh);
 
             // Get filtered values
             x = mf[i].applyFilter((double) val);
@@ -122,11 +145,13 @@ void loop() {
             if ((x == 1) && (output[i] == LOW))
             {
                 digitalWrite(pinsOut[i], HIGH);
+                digitalWrite(ledsOut[i], HIGH);
                 output[i] = HIGH;
             }
             else if ((x < 1) && (output[i] == HIGH))
             {
                 digitalWrite(pinsOut[i], LOW);
+                digitalWrite(ledsOut[i], LOW);
                 output[i] = LOW;
             }
             }
@@ -194,4 +219,10 @@ void processCommand(void) {
       cmdPointer = 0;
     }
   }
+}
+
+float getThreshold(int val) {
+    // analogRead() range 0-1023 (10-bit ADC)
+    //return ((float(val)/1023)*(thresh_high - thresh_low) + thresh_low); // directly proportional
+    return ((1.0 - (float(val)/1023))*(thresh_high - thresh_low) + thresh_low); // inversely proportional
 }
