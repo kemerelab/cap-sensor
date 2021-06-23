@@ -5,12 +5,14 @@
 const int nSensors = 1; // number of lick sensors
 long sensitivity = 30; // sensor sensitivity (increases acquisition time)
 bool hasAnalogPin = true; // does setup use analog input pin to determine threshold?
-double thresh; // threshold for detecting lick (stds from mean)
-double thresh_low = 1.0; 
-double thresh_high = 10.0;
-double alpha = 0.007; // contribution of signal to filter buffer stats
-double tFilter = 0.500; // duration of filter buffer (s) (determines responsiveness)
+char method = 'A'; // 'A' = use absolute threshold, 'S' = use std threshold
+double thresh; // threshold for detecting lick (stds from mean or raw value)
+double thresh_low = 500.0; 
+double thresh_high = 10000.0;
+double alpha = 0.000; // contribution of signal to filter buffer stats
+double tFilter = 20.0; // duration of filter buffer (s) (determines responsiveness)
 double sampleRate = 200.0; // sample frequency (Hz) (determines resolution)
+long k = 10; // downsample factor; update buffer every k samples
 
 // Sensor I/O (constructor format: (pin_HIGH, pin_LOW))
 CapacitiveSensor cs[] = {CapacitiveSensor(0, 1)};
@@ -45,6 +47,24 @@ void setup() {
         output[i] = LOW;
     }
 
+    // Blink LED on/off five times (debugging)
+    // for (int j = 0; j < 5; j++) {
+    //     for (int i = 0; i < nSensors; i++) {
+    //         digitalWrite(ledsOut[i], HIGH);
+    //     }
+    //     delay(500);
+    //     for (int i = 0; i < nSensors; i++) {
+    //         digitalWrite(ledsOut[i], LOW);
+    //     }
+    //     delay(500);
+    // }
+
+    // Set analog input for threshold
+    if (hasAnalogPin) {
+        pinMode(analogPin, INPUT);
+        thresh = getThreshold(analogRead(analogPin));
+    }
+    
     // Begin serial transmission
     Serial.begin(115200);
 
@@ -57,7 +77,7 @@ void setup() {
         Serial.print("Changing sampleRate to "); Serial.println(sampleRateMax);
         sampleRate = sampleRateMax;
     }
-    long n = (long) (tFilter * sampleRate);
+    long n = (long) (tFilter * sampleRate / (double) k);
     int nMax = (long) (1500.0 / ((double) nSensors));
     if (n > nMax) {
         Serial.print("buffer size of "); Serial.print(n); 
@@ -67,11 +87,8 @@ void setup() {
     }
 
     // Create filters
-    if (hasAnalogPin) {
-        thresh = getThreshold(analogRead(analogPin));
-    }
     for (int i = 0; i < nSensors; i++) {
-        mf[i].createFilter(n, thresh, alpha);
+        mf[i].createFilter(n, k, thresh, alpha, method);
     }
 
     // Get start time and minimum sample period
@@ -81,18 +98,17 @@ void setup() {
     // Print parameters before beginning loop
     Serial.println("Starting sensor with parameters:");
     Serial.print("buffer size: "); Serial.println(n);
-    Serial.print("buffer duration: "); Serial.println((double) n * samplePeriod * 1.0e-6);
+    Serial.print("buffer duration: "); Serial.println((double) n * samplePeriod * 1.0e-6 * (double) k);
+    Serial.print("buffer update rate: "); Serial.println(sampleRate / (double) k);
     Serial.print("sample rate: "); Serial.println(sampleRate);
     Serial.print("alpha: "); Serial.println(alpha, 5);
     if (hasAnalogPin) {
-        Serial.print("signal threshold range (std): "); Serial.print(thresh_low, 2); Serial.print(" - "); Serial.println(thresh_high, 2);
+        Serial.print("signal threshold range: "); Serial.print(thresh_low, 2); Serial.print(" - "); Serial.println(thresh_high, 2);
     }
     else {
-        Serial.print("signal threshold (std): "); Serial.println(thresh, 2);
+        Serial.print("signal threshold: "); Serial.println(thresh, 2);
     }
     Serial.println();
-
-    delay(5000);
 }
 
 void loop() {
@@ -154,7 +170,7 @@ void loop() {
                 digitalWrite(ledsOut[i], LOW);
                 output[i] = LOW;
             }
-            }
+        }
     Serial.print("\n");
     tStart = tCurrent;
   }
@@ -223,6 +239,6 @@ void processCommand(void) {
 
 float getThreshold(int val) {
     // analogRead() range 0-1023 (10-bit ADC)
-    //return ((float(val)/1023)*(thresh_high - thresh_low) + thresh_low); // directly proportional
-    return ((1.0 - (float(val)/1023))*(thresh_high - thresh_low) + thresh_low); // inversely proportional
+    //return (long) ((float(val)/1023)*(thresh_high - thresh_low) + thresh_low); // directly proportional
+    return (long) ((1.0 - (float(val)/1023))*(thresh_high - thresh_low) + thresh_low); // inversely proportional
 }

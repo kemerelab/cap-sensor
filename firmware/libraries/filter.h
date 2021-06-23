@@ -90,22 +90,26 @@ class MovingFilter {
         double std; // current buffer std
         double *buffer; // buffer containing filter applied to last n data points
         bool isInitialized; // true if buffer has been properly initialized
+        long startIndex = 10; // number of samples after which to start
 
     public:
         // Filter parameters
         long n; // length of buffer in data points
-        double thresh; // number of stds from mean that constitutes signal
-        double alpha; // influence of most recent data point containing signal
+        long k; // number of samples between buffer updates (rudimentary low-pass filter)
+        double thresh; // if method = 'S': number of stds from mean that constitutes signal
+                       // if method = 'A': absolute value threshold that constitutes signal
+        double alpha; // influence on buffer of most recent data point containing signal
+        char method; // signal detection method ('A' = absolute, 'S' = std)
         
         // Constructor
         MovingFilter();
-        MovingFilter(long n, double thresh, double alpha);
+        MovingFilter(long n, long k, double thresh, double alpha, char method);
 
         // Destructor
         ~MovingFilter() {};
 
         // Methods
-        void createFilter(long n, double thresh, double alpha);
+        void createFilter(long n, long k, double thresh, double alpha, char method);
         int applyFilter(double y);
         void reset(void);
 };
