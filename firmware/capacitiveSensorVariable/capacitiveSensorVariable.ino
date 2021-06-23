@@ -46,19 +46,19 @@ void setup() {
 void loop() {
   // Get current sensor value and time
   // Note: sensor value acquisition limits transmission rate
+  tCurrent = micros();
+  Serial.print(tCurrent);
   for (int i = 0; i < nSensors; i++)
   {
     vals[i] = cs[i].capacitiveSensor(30);
   }
-  tCurrent = micros();
-
+    
   // Get current threshold
   th = getThreshold(analogRead(analogPin));
 
   // Write sensor value with sample frequency or if clock restarted
   if ((tCurrent - tStart > samplePeriod) || (tCurrent - tStart < 0))
   {
-    Serial.print(tCurrent);
     for (int i = 0; i < nSensors; i++)
     {
       Serial.print(" ");
@@ -89,7 +89,7 @@ void loop() {
 }
 
 float getThreshold(int val) {
-    // analogRead() range 0-1023 (10-bit ADC)
-    //return (long) ((float(val)/1023)*(th_high - th_low) + th_low); // directly proportional
-    return (long) ((1.0 - (float(val)/1023))*(th_high - th_low) + th_low); // inversely proportional
+  // analogRead() range 0-1023 (10-bit ADC)
+  //return (long) ((float(val)/1023)*(th_high - th_low) + th_low); // directly proportional
+  return (long) ((1.0 - (float(val)/1023))*(th_high - th_low) + th_low); // inversely proportional
 }

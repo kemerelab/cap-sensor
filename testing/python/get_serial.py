@@ -37,8 +37,11 @@ with open(args.output_filepath, 'wb') as f:
 
     t_start = time.time()
     while ser.is_open and ((time.time() - t_start) < t_total):
-        if ser.in_waiting > 0:
-            f.write(ser.readline())
+        try:
+            if ser.in_waiting > 0:
+                f.write(ser.readline())
+        except KeyboardInterrupt:
+            sys.exit()
     ser.close()
 
 print('Logged %.2f seconds of data.' % t_total)
