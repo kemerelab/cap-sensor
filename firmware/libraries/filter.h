@@ -112,6 +112,7 @@ class MovingFilter {
         void createFilter(long n, long k, double thresh, double alpha, char method);
         int applyFilter(double y);
         void reset(void);
+        double bufferMean() const { return mean; };
 };
 
 // Necessary to link implementation of template classes and methods. 

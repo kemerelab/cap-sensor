@@ -81,7 +81,7 @@ int MovingFilter::applyFilter(double y) {
     long m = t / k; // current sample number
 
     // Check for signal (if received adequate number of samples to start)
-    if ( (m > startIndex) &&
+    if ( (m >= startIndex) &&
          (((abs(y - mean) > (thresh*std)) && (method == 'S')) ||
           ((abs(y - mean) > thresh) && (method == 'A'))) ) {
         // Update signal array

@@ -37,7 +37,7 @@ int main(int argc, char *argv[]) {
 
         while(inFile >> y) {
             // Output to file
-            outFile << filter.applyFilter(y) << "\n";
+            outFile << filter.applyFilter(y) << " " << filter.bufferMean() << "\n";
         }
     }
 
