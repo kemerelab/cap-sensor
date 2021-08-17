@@ -147,11 +147,20 @@ void loop() {
             Serial.print(" ");
             Serial.print(thresh);
 
+            // Print buffer mean (baseline)
+            Serial.print(" ");
+            Serial.print(mf[i].bufferMean());
+
             // Get filtered values
             x = mf[i].applyFilter((double) val);
-            if (x == -1) {
-                mf[i].reset();
-            }
+
+            // NOTE: Do not call reset() after a "negative" signal! This will
+            // cause many timeouts within a lick bout as the negative component
+            // of the fluctuation may exceed threshold and thus call the reset()
+            // function often, which triggers a delay as the buffer refills.
+            //if (x == -1) {
+            //    mf[i].reset();
+            //}
       
             // Print filtered values
             Serial.print(" ");
