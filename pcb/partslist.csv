@@ -1,0 +1,8 @@
+﻿Name,Part,Value,Manufacturer,Product ID,Description
+capacitor (0603 SMD),C1,100pF,-,-,provides baseline capacitance in sensor circuit
+resistor (0603 SMD),R1,501k,-,-,provides baseline resistance in sensor circuit
+trimpot,TM1,1M,Bourns,3386P-1-105TLF,tunes resistance in sensor circuit
+trimpot,TM2,5k,Bourns,3386P-1-502TLF,tunes detection threshold in firmware
+audio jack,J1,3.5 mm,CUI Devices,SJ1-3523N,"carries power, signal output, and ground"
+power switch,SWITCH,DPDT,C&K,JS202011CQN ,power switch for PCB
+microcontroller,JP5/JP6,Trinket M0,Adafruit,3500,runs firmware for signal detection

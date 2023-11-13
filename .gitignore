@@ -11,3 +11,6 @@ __temp__*
 
 # Binaries
 firmware/bin/*
+
+# Graphics
+images/*.svg

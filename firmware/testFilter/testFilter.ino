@@ -1,6 +1,9 @@
 #include <CapacitiveSensor.h>
 #include <filter.h>
 
+// To test the filter code, change `#include <math.h>` to `#include <cmath>` 
+// in `filter.cpp`, and compile `medianFilter.cpp` and/or `movingFilter.cpp`.
+
 // Settings
 const int nSensors = 2; // number of lick sensors
 long sensitivity = 120; // sensor sensitivity
