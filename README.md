@@ -2,9 +2,10 @@
 ## Theory
 Capacitive sensing relies on, as the name suggests, the capacitance of the involved circuit. Capacitance, in turn, is the ability to store electrical charge under an applied voltage, which is employed by components termed capacitors. Clasically, capacitors can be visualized as two conductor plates separated by some distance $d$; the capacitance of these "parallel plate capacitors" is then governed by the equation:
 
-$
+$$
+\displaystyle
 C = \dfrac{Q}{V} = \epsilon \dfrac{A}{d}
-$
+$$
 
 where $Q$ is the electrical charge stored on conductor plate; $V$ is the voltage applied to the capacitor; $\epsilon$ is the dielectric constant of the medium separating the plates; $A$ is the area of each plate; and $d$ is the distance between the plates.
 
@@ -14,7 +15,10 @@ Once charged after application of a voltage across the conductor plates (by, for
 
 When connected to the battery, the capacitor with capacitance $C$ will store an amount of charge $Q$ after equilibrating at the battery voltage $V_B$ (position 1). If the circuit is disconnected from the battery (position 2), then an electric current will flow from the positively charged capacitor plate across the resistor to ground. The time-dependent voltage across the capacitor, $V_C$ follows a well-known exponential decay:
 
-$V(t) = V_B e^{-\frac{t}{\tau}}$
+$$
+\displaystyle
+V(t) = V_B e^{-\frac{t}{\tau}}
+$$
 
 where $\tau = RC$ is known as the time constant of the circuit and is given by the product of the resistance and capacitance. (Similarly, reflecting the equation across the time axis gives the time-dependence for charging the capacitor.)
 
